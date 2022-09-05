@@ -1,0 +1,52 @@
+---
+title: "Nolan_Assignment 1"
+output: html_document
+date: "2022-09-03"
+---
+
+## Introduction 
+I decided to use a data set called nhl_elo, which is the predictions for NHL games. This specific data set dates back to the start of the national hockey league, going back to teh 1917-18 season. This data goes on to predict who will win each game and even the Stanley Cup. This method uses different calculations to predict each of the variables presented in this data set. 
+
+Link to article: https://fivethirtyeight.com/methodology/how-our-nhl-predictions-work/ 
+
+
+```{r #1 Get data from github}
+library(RCurl)
+library(dplyr)
+
+x<- getURL("https://raw.githubusercontent.com/arinolan/Assignment-1-data-607/main/nhl_elo.csv")
+data <-read.csv(text=x)
+```
+
+
+```{r Create subset of data}
+newdata <- subset(data, select = -c(neutral, home_team_pregame_rating, away_team_pregame_rating, game_importance_rating,
+                                    game_overall_rating, home_team_postgame_rating, away_team_postgame_rating, status),
+                                    home_team_winprob > 0.6 & season > '2020')
+
+```
+
+
+```{r create dataframe and update OT & Playoff column}
+df <- newdata
+
+df$ot[df$ot=='OT'] <- 'Overtime'
+df$ot[df$ot=='SO'] <- 'Shootout'
+df$ot[df$ot=='3OT'] <- 'Tiple Overtime'
+df$ot[df$ot==''] <- 'No Overtime'
+
+df$playoff[df$playoff==1] <- 'Playoff'
+df$playoff[df$playoff==0] <- 'Regular Season'
+```
+
+
+```{r summary of away team stats}
+summary(df$away_team_winprob)
+summary(df$away_team_expected_points)
+summary(df$away_team_score)
+```
+
+## Conculsion and Findings
+If I were to extend this analysis, I would want to compare the predicted number of goals scored to the actual and then compare the findings to how the probability of winning the game is performing. Since the current calculation factors in the home team advantage, I want to see if this is an assumption that should be continued in future predictions. I did find it interesting that when the probability of the home team winning was greater than 60%, the median that the away team would win was at about 33%. Also, when comparing the expected and actual points for the away team, the median for the expected points was 0.8270 while the actual points were 2.000. This would lead me to believe that the prediction used for expected points may need to be reevauluated. 
+
+
